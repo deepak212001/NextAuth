@@ -1,6 +1,7 @@
 import User from "@/models/user.model";
 import nodemailer from "nodemailer";
 import bcryptjs from "bcryptjs";
+import { set } from "mongoose";
 
 export const sendEmail = async ({ email, emailType, userId }: any) => {
   try {
@@ -9,8 +10,10 @@ export const sendEmail = async ({ email, emailType, userId }: any) => {
     if (emailType === "VERIFY") {
       // Verification email logic
       await User.findByIdAndUpdate(userId, {
-        verifyToken: hashedToken,
-        verifyTokenExpiry: Date.now() + 600000, // 600000 means current time se 10 min tak valid
+        $set: {
+          verifyToken: hashedToken,
+          verifyTokenExpiry: Date.now() + 600000, // 600000 means current time se 10 min tak valid
+        },
       });
     } else if (emailType === "RESET") {
       // Password reset email logic
@@ -38,7 +41,7 @@ export const sendEmail = async ({ email, emailType, userId }: any) => {
       }/${emailType.toLowerCase()}?token=${hashedToken}">here</a> to ${
         emailType === "VERIFY" ? "verify your email" : "reset your password"
       }. Or you can copy and paste this link into your browser: <br />
-      ${process.env.DOMAIN}/${emailType.toLowerCase()}?token=${hashedToken}
+      ${process.env.DOMAIN}/${emailType.toLowerCase()}email?token=${hashedToken}
       </p>`, // HTML body
     };
 
